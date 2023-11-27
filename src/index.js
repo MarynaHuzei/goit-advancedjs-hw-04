@@ -16,7 +16,7 @@ elements.searchForm.addEventListener('submit', handlerSubmit);
 elements.btnLoadMore.addEventListener('click', onClickLoadMore);
 
 let newSearchQuery = '';
-let lightbox;
+let lightbox = new SimpleLightbox('.gallery a');
 let page = 1;
 const perPage = 40;
 
@@ -33,6 +33,7 @@ async function handlerSubmit(evt) {
     });
     return;
   }
+
   elements.gallery.innerHTML = '';
   elements.searchForm.reset();
   page = 1;
@@ -52,13 +53,21 @@ async function handlerSubmit(evt) {
 
       return;
     }
+
     elements.gallery.innerHTML = '';
+    if (totalHits < perPage) {
+      iziToast.info({
+        message: "We're sorry, but you've reached the end of search results.",
+        position: 'bottomCenter',
+        color: 'rgba(57, 58, 58, 0.959);',
+      });
+    }
     if (totalHits > perPage) {
       elements.btnLoadMore.classList.remove('is-hidden');
     }
     elements.gallery.innerHTML = '';
     galleryMarkup(hits);
-    lightbox = new SimpleLightbox('.gallery a').refresh();
+    lightbox.refresh();
     iziToast.success({
       message: `Hooray! We found ${totalHits} images !!!`,
       position: 'topRight',
@@ -112,6 +121,7 @@ async function onClickLoadMore() {
   try {
     const { hits, totalHits } = await apiService(newSearchQuery, page, perPage);
     galleryMarkup(hits);
+    lightbox.refresh();
     const totalPages = Math.ceil(totalHits / perPage);
     if (page === totalPages) {
       iziToast.info({
